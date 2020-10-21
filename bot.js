@@ -6,6 +6,9 @@ const inviteProperties = {};
 const guildInvites = {};
 const wait = require('util').promisify(setTimeout);
 
+const dblink = process.env.DB_URL;
+const Keyv = new Keyv(dblink);
+
 bot.login(TOKEN);
 
 bot.on('ready', () => {
@@ -25,6 +28,8 @@ bot.on('message', msg => {
     msg.reply('Excuse me, I think the term you meant to use was ***associate member*** >:(');
 
   } 
+
+
   else if (msg.content.startsWith('!setInviteRole')) {
     if (msg.member.guild.me.hasPermission('ADMINISTRATOR')) {
       var parsedMessage = msg.content.split(" ");
@@ -37,12 +42,48 @@ bot.on('message', msg => {
         var parsedRole = parsedMessage[1];
         var parsedInvite = parsedMessage[2];
 
-        inviteProperties[parsedInvite] = parsedRole;
-        msg.reply("Users joining from invite " + parsedInvite + " will now be set to " + parsedRole + " on server entry!");
+
+        // To compare, we need to load the current invite list.
+        member.guild.fetchInvites().then(invites => {
+        // This is the *existing* invites for the guild.
+        const ei = guildInvites[member.guild.id];
+  
+        // Update the cached invites
+        guildInvites[member.guild.id] = invites;
+        
+        if (ei.indexOf(parsedInvite) !== -1) {
+          await Keyv.set(parsedInvite, parsedRole);
+          msg.reply("Users joining from invite " + parsedInvite + " will now be set to " + parsedRole + " on server entry!");
+        }
+
+        else {
+          msg.reply("Sorry! " + parsedInvite + " doesn't exist on this server!");
+        }
+      }); 
       }
       
     } 
   }
+
+  else if (msg.content.startsWith('!showMeRole')) {
+    var parsedMessage = msg.content.split(" ");
+
+    if (parsedMessage < 2) {
+      msg.reply("Incorrect parameters! Usage: !setInviteRole [Invite ID]")
+    }
+
+    else {
+      var fromDB = await Keyv.get(parsedMessage[1])
+      if (fromDB == undefined) {
+        msg.reply("Sorry that role is undefined!");
+      }
+      else {
+        msg.reply(fromDB);
+      }
+    }
+      
+  }
+
 });
 
 bot.on('guildMemberAdd', async member => {
@@ -58,9 +99,10 @@ bot.on('guildMemberAdd', async member => {
     const invite = invites.find(i => ei.get(i.code).uses < i.uses);
 
     console.log(invite.code);
+    const findRole = await Keyv.get(invite.code)
 
-    if (inviteProperties[invite.code] != undefined) {
-      const role = member.guild.roles.find(x => x.name === inviteProperties[invite.code]);
+    if (findRole != undefined) {
+      const role = member.guild.roles.find(x => x.name === findRole);
       member.addRole(role.id)
       console.info("Set " + member.displayName + " to " + role);
     }
