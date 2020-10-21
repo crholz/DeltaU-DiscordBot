@@ -73,12 +73,17 @@ bot.on('message', async msg => {
     }
 
     else {
-      var fromDB = await Keyv.get(parsedMessage[1])
-      if (fromDB == undefined) {
-        msg.reply("Sorry that role is undefined!");
+      try {
+        var fromDB = await Keyv.get(parsedMessage[1])
+        if (fromDB == undefined) {
+          msg.reply("Sorry that role is undefined!");
+        }
+        else {
+          msg.reply(fromDB);
+        }
       }
-      else {
-        msg.reply(fromDB);
+      catch (error) {
+        return
       }
     }
       
@@ -99,12 +104,20 @@ bot.on('guildMemberAdd', async member => {
     const invite = invites.find(i => ei.get(i.code).uses < i.uses);
 
     console.log(invite.code);
-    const findRole = await Keyv.get(invite.code)
+    
 
-    if (findRole != undefined) {
-      const role = member.guild.roles.find(x => x.name === findRole);
-      member.addRole(role.id)
-      console.info("Set " + member.displayName + " to " + role);
+    try {
+      const findRole = await Keyv.get(invite.code);
+      if (findRole != undefined) {
+        const role = member.guild.roles.find(x => x.name === findRole);
+        member.addRole(role.id);
+        console.info("Set " + member.displayName + " to " + role);
+      }
     }
+    catch(error) {
+      return;
+    }
+
+    
     });
 });
