@@ -23,7 +23,7 @@ bot.on('ready', () => {
   });
 });
 
-bot.on('message', msg => {
+bot.on('message', async msg => {
   if (msg.content.toLowerCase().includes('pledge')) {
     msg.reply('Excuse me, I think the term you meant to use was ***associate member*** >:(');
 
