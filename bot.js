@@ -2,13 +2,15 @@ require('dotenv').config();
 const Discord = require('discord.js');
 const Keyv = require('keyv');
 const bot = new Discord.Client();
-const TOKEN = process.env.TOKEN;
+const TOKEN = process.env.BOT_TOKEN;
+const dblink = process.env.DB_URL;
 const inviteProperties = {};
 const guildInvites = {};
 const wait = require('util').promisify(setTimeout);
 
-const dblink = process.env.DB_URL;
-const keyv = new Keyv(dblink);
+const mykey = new Keyv(dblink);
+
+mykey.on('error', err => console.error('Keyv connection error:', err));
 
 bot.login(TOKEN);
 
@@ -45,14 +47,14 @@ bot.on('message', async msg => {
 
 
         // To compare, we need to load the current invite list.
-        member.guild.fetchInvites().then(invites => {
+        msg.member.guild.fetchInvites().then(invites => {
         // This is the *existing* invites for the guild.
-        const ei = guildInvites[member.guild.id];
-  
+        const ei = guildInvites[msg.member.guild.id];
         // Update the cached invites
-        guildInvites[member.guild.id] = invites;
-        
-        if (ei.indexOf(parsedInvite) !== -1) {
+        guildInvites[msg.member.guild.id] = invites;
+        const findVar = invites.find(x => x.code === parsedInvite)
+
+        if (findVar != null && findVar.code == parsedInvite) {
           addToDB(parsedInvite, parsedRole);
           msg.reply("Users joining from invite " + parsedInvite + " will now be set to " + parsedRole + " on server entry!");
         }
@@ -74,12 +76,14 @@ bot.on('message', async msg => {
     }
 
     else {
-      var fromDB = getFromDB(parsedMessage[1])
+      const fromDB = await getFromDB(parsedMessage[1]);
+      
+      
       if (fromDB == undefined) {
         msg.reply("Sorry that doesn't exist!");
       }
       else {
-        msg.reply(fromDB);
+        msg.reply("The invite code, " + parsedMessage[1] + " is assigned to: " + fromDB);
       }
     }
       
@@ -88,8 +92,9 @@ bot.on('message', async msg => {
 });
 
 bot.on('guildMemberAdd', async member => {
+    
     // To compare, we need to load the current invite list.
-    member.guild.fetchInvites().then(invites => {
+    member.guild.fetchInvites().then(async invites => {
     // This is the *existing* invites for the guild.
     const ei = guildInvites[member.guild.id];
 
@@ -101,10 +106,10 @@ bot.on('guildMemberAdd', async member => {
 
     console.log(invite.code);
     
-
-    const findRole = getFromDB(invite.code)
+    const findRole = await getFromDB(invite.code);
+    
     if (findRole != undefined) {
-      const role = member.guild.roles.find(x => x.name === findRole);
+      let role = member.guild.roles.find(x => x.name === findRole);
       member.addRole(role.id);
       console.info("Set " + member.displayName + " to " + role);
     }
@@ -113,10 +118,26 @@ bot.on('guildMemberAdd', async member => {
 });
 
 async function addToDB(invite, role) {
-  await keyv.set(invite, role);
+  try {
+    await mykey.set(invite, role);
+    console.log("Added Key to DB")
+  }
+  catch (error) {
+    console.log(error)
+    throw(error)
+  }
 }
 
 async function getFromDB(invite) {
-  role = await keyv.get(invite);
-  return role;
+  try {
+    let role = undefined
+    await mykey.get(invite).then(function(result) {role = result});
+    console.log(role)
+    return role;
+  }
+  catch (error) {
+    console.log(error)
+    throw(error)
+  }
+  
 }
