@@ -113,10 +113,10 @@ bot.on('guildMemberAdd', async member => {
 });
 
 async function addToDB(invite, role) {
-  await Keyv.set(invite, role);
+  await keyv.set(invite, role);
 }
 
 async function getFromDB(invite) {
-  role = await Keyv.get(invite);
+  role = await keyv.get(invite);
   return role;
 }
