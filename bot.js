@@ -8,7 +8,7 @@ const guildInvites = {};
 const wait = require('util').promisify(setTimeout);
 
 const dblink = process.env.DB_URL;
-const Keyv = new Keyv(dblink);
+const keyv = new Keyv(dblink);
 
 bot.login(TOKEN);
 
