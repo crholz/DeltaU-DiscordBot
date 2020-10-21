@@ -52,7 +52,7 @@ bot.on('message', async msg => {
         guildInvites[member.guild.id] = invites;
         
         if (ei.indexOf(parsedInvite) !== -1) {
-          await Keyv.set(parsedInvite, parsedRole);
+          addToDB(parsedInvite, parsedRole);
           msg.reply("Users joining from invite " + parsedInvite + " will now be set to " + parsedRole + " on server entry!");
         }
 
@@ -73,17 +73,12 @@ bot.on('message', async msg => {
     }
 
     else {
-      try {
-        var fromDB = await Keyv.get(parsedMessage[1])
-        if (fromDB == undefined) {
-          msg.reply("Sorry that role is undefined!");
-        }
-        else {
-          msg.reply(fromDB);
-        }
+      var fromDB = getFromDB(parsedMessage[1])
+      if (fromDB == undefined) {
+        msg.reply("Sorry that doesn't exist!");
       }
-      catch (error) {
-        return
+      else {
+        msg.reply(fromDB);
       }
     }
       
@@ -106,18 +101,21 @@ bot.on('guildMemberAdd', async member => {
     console.log(invite.code);
     
 
-    try {
-      const findRole = await Keyv.get(invite.code);
-      if (findRole != undefined) {
-        const role = member.guild.roles.find(x => x.name === findRole);
-        member.addRole(role.id);
-        console.info("Set " + member.displayName + " to " + role);
-      }
-    }
-    catch(error) {
-      return;
+    const findRole = getFromDB(invite.code)
+    if (findRole != undefined) {
+      const role = member.guild.roles.find(x => x.name === findRole);
+      member.addRole(role.id);
+      console.info("Set " + member.displayName + " to " + role);
     }
 
-    
     });
 });
+
+async function addToDB(invite, role) {
+  await Keyv.set(invite, role);
+}
+
+async function getFromDB(invite) {
+  role = await Keyv.get(invite);
+  return role;
+}
