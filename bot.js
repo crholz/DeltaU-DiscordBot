@@ -8,8 +8,6 @@ const inviteProperties = {};
 const guildInvites = {};
 const wait = require('util').promisify(setTimeout);
 
-mykey.on('error', err => console.error('Keyv connection error:', err));
-
 bot.login(TOKEN);
 
 bot.on('ready', () => {
@@ -116,6 +114,7 @@ bot.on('guildMemberAdd', async member => {
 
 async function addToDB(invite, role) {
   const database = new Keyv(dblink);
+  database.on('error', err => console.error('Keyv connection error:', err));
   try {
     await database.set(invite, role);
     console.log("Added Key to DB")
@@ -128,6 +127,7 @@ async function addToDB(invite, role) {
 
 async function getFromDB(invite) {
   const database = new Keyv(dblink);
+  database.on('error', err => console.error('Keyv connection error:', err));
   try {
     let role = undefined
     await database.get(invite).then(function(result) {role = result});
