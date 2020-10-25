@@ -1,15 +1,14 @@
 {
-  "name": "discord-bot",
+  "name": "associate-bot",
   "version": "1.0.0",
-  "description": "Discord bot for SitePoint",
-  "main": "index.js",
+  "description": "A discord bot for the MTU DU server.",
+  "main": "bot.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "author": "Michiel Mulders",
+  "author": "Corbin Holz",
   "license": "ISC",
   "dependencies": {
-    "@keyv/mongo": "^1.1.0",
     "@keyv/mysql": "^1.1.4",
     "discord.js": "^11.6.4",
     "dotenv": "^8.2.0",

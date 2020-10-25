@@ -8,8 +8,6 @@ const inviteProperties = {};
 const guildInvites = {};
 const wait = require('util').promisify(setTimeout);
 
-const mykey = new Keyv(dblink);
-
 mykey.on('error', err => console.error('Keyv connection error:', err));
 
 bot.login(TOKEN);
@@ -92,7 +90,6 @@ bot.on('message', async msg => {
 });
 
 bot.on('guildMemberAdd', async member => {
-    
     // To compare, we need to load the current invite list.
     member.guild.fetchInvites().then(async invites => {
     // This is the *existing* invites for the guild.
@@ -118,8 +115,9 @@ bot.on('guildMemberAdd', async member => {
 });
 
 async function addToDB(invite, role) {
+  const database = new Keyv(dblink);
   try {
-    await mykey.set(invite, role);
+    await database.set(invite, role);
     console.log("Added Key to DB")
   }
   catch (error) {
@@ -129,9 +127,10 @@ async function addToDB(invite, role) {
 }
 
 async function getFromDB(invite) {
+  const database = new Keyv(dblink);
   try {
     let role = undefined
-    await mykey.get(invite).then(function(result) {role = result});
+    await database.get(invite).then(function(result) {role = result});
     console.log(role)
     return role;
   }
