@@ -88,6 +88,7 @@ bot.on('message', async msg => {
 });
 
 bot.on('guildMemberAdd', async member => {
+  console.log("Guild?")
     // To compare, we need to load the current invite list.
     member.guild.fetchInvites().then(async invites => {
     // This is the *existing* invites for the guild.
@@ -100,6 +101,7 @@ bot.on('guildMemberAdd', async member => {
     const invite = invites.find(i => ei.get(i.code).uses < i.uses);
 
     console.log(invite.code);
+
     
     const findRole = await getFromDB(invite.code);
     
