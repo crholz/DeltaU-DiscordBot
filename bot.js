@@ -87,7 +87,7 @@ bot.on('message', async msg => {
 
 });
 
-bot.on('guildMemberAdd', member => {
+bot.on('guildMemberAdd', async member => {
     console.log("Guild?")
     
     // To compare, we need to load the current invite list.
