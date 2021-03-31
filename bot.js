@@ -28,6 +28,19 @@ bot.on('message', async msg => {
 
   } 
 
+  else if (msg.content.toLowerCase() == ('!graduate')) {
+    if (member.roles.includes('Undergrads')) {
+      msg.reply('Congratulations on graduating!')
+
+      //member.guild.roles.find(x => x.name === "Alumni")
+    }
+
+    else {
+      msg.reply("Something went wrong. You're not in Undergrads")
+    }
+    
+  }
+
 
   else if (msg.content.startsWith('!setInviteRole')) {
     if (msg.member.guild.me.hasPermission('ADMINISTRATOR')) {
