@@ -29,7 +29,7 @@ bot.on('message', async msg => {
   } 
 
   else if (msg.content.toLowerCase() == ('!graduate')) {
-    if (member.roles.includes('Undergrads')) {
+    if (msg.member.roles.includes('Undergrads')) {
       msg.reply('Congratulations on graduating!')
 
       //member.guild.roles.find(x => x.name === "Alumni")
